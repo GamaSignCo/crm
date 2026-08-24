@@ -111,12 +111,6 @@
             />
 
             <Button
-              :tooltip="__('Attach a File')"
-              :icon="AttachmentIcon"
-              @click="showFilesUploader = true"
-            />
-
-            <Button
               v-if="canDelete"
               :tooltip="__('Delete')"
               variant="subtle"
@@ -309,17 +303,6 @@
       afterInsert: (_doc) => addContact(_doc.name),
     }"
   />
-  <FilesUploader
-    v-model="showFilesUploader"
-    doctype="CRM Deal"
-    :docname="dealId"
-    @after="
-      () => {
-        activities?.all_activities?.reload()
-        changeTabTo('attachments')
-      }
-    "
-  />
   <DeleteLinkedDocModal
     v-if="showDeleteLinkedDocModal"
     v-model="showDeleteLinkedDocModal"
@@ -354,13 +337,11 @@ import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
-import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
-import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
 import Link from '@/components/Controls/Link.vue'
 import Section from '@/components/CollapsibleSection.vue'
@@ -514,7 +495,6 @@ onBeforeUnmount(() => {
 
 const reload = ref(false)
 const showOrganizationModal = ref(false)
-const showFilesUploader = ref(false)
 const _organization = ref({})
 
 const breadcrumbs = computed(() => {
@@ -601,11 +581,6 @@ const tabs = computed(() => {
       name: 'Notes',
       label: __('Notes'),
       icon: NoteIcon,
-    },
-    {
-      name: 'Attachments',
-      label: __('Attachments'),
-      icon: AttachmentIcon,
     },
     {
       name: 'WhatsApp',

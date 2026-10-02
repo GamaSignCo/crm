@@ -14,6 +14,12 @@ def hierarchy_enabled() -> bool:
 	return bool(frappe.db.get_single_value("FCRM Settings", "enable_sales_hierarchy"))
 
 
+def sales_team_shares_records() -> bool:
+	if not frappe.get_meta("FCRM Settings").has_field("share_sales_records"):
+		return False
+	return bool(frappe.db.get_single_value("FCRM Settings", "share_sales_records"))
+
+
 def _permission_query_conditions(user: str | None, doctype: str):
 	if not user:
 		user = frappe.session.user
@@ -23,6 +29,8 @@ def _permission_query_conditions(user: str | None, doctype: str):
 
 	roles = frappe.get_roles(user)
 	if "System Manager" in roles:
+		return ""
+	if "Sales User" in roles and sales_team_shares_records():
 		return ""
 
 	in_tree = hierarchy_enabled() and _in_hierarchy(user)
@@ -80,6 +88,8 @@ def _has_permission(doc, ptype, user, doctype: str) -> bool | None:
 	roles = frappe.get_roles(user)
 	if "System Manager" in roles:
 		return True
+	if "Sales User" in roles and ptype in {"read", "write", "select"} and sales_team_shares_records():
+		return True
 
 	if ptype == "create" or not doc.name:
 		return True
@@ -89,6 +99,8 @@ def _has_permission(doc, ptype, user, doctype: str) -> bool | None:
 		return True
 
 	conditions = _permission_query_conditions(user, doctype)
+	if not conditions:
+		return True
 	DT = frappe.qb.DocType(doctype)
 	return bool(
 		frappe.qb.from_(DT).select(DT.name).where(DT.name == doc.name).where(conditions).limit(1).run()

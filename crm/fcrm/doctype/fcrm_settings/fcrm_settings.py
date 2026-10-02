@@ -40,6 +40,7 @@ class FCRMSettings(Document):
 		service_provider: DF.Literal[
 			"frankfurter.app", "fawazahmed-exchange-api", "exchangerate.host", "exchangerate-api"
 		]
+		share_sales_records: DF.Check
 		update_timestamp_on_new_communication: DF.Check
 	# end: auto-generated types
 

@@ -17,9 +17,9 @@
         </div>
         <p class="text-p-base text-ink-gray-6">
           {{
-            __(
-              'Restrict visibility of Leads and Deals based on a reporting tree.',
-            )
+            shareSalesRecords
+              ? __('Sales Users can work on all Leads and Deals. The hierarchy still applies to managers.')
+              : __('Restrict visibility of Leads and Deals based on a reporting tree.')
           }}
         </p>
       </div>
@@ -39,6 +39,24 @@
           @click="openAddDialog()"
         />
       </div>
+    </div>
+
+    <div
+      v-if="fcrmSettings.doc && 'share_sales_records' in fcrmSettings.doc"
+      class="mx-2 flex items-center justify-between gap-4 rounded border border-outline-gray-2 p-4"
+    >
+      <div class="flex flex-col gap-1">
+        <span class="text-p-base font-medium">{{ __('Share Leads and Deals with Sales Team') }}</span>
+        <span class="text-p-sm text-ink-gray-6">
+          {{ __('Allow Sales Users to view and edit colleagues’ Leads and Deals.') }}
+        </span>
+      </div>
+      <Button
+        :label="shareSalesRecords ? __('Disable team access') : __('Enable team access')"
+        :disabled="!canEdit"
+        :loading="fcrmSettings.setValue.loading"
+        @click="toggleTeamAccess"
+      />
     </div>
 
     <div
@@ -295,6 +313,14 @@ const fcrmSettings = createDocumentResource({
 const hierarchyEnabled = computed(
   () => !!fcrmSettings.doc?.enable_sales_hierarchy,
 )
+const shareSalesRecords = computed(() => !!fcrmSettings.doc?.share_sales_records)
+
+function toggleTeamAccess() {
+  fcrmSettings.setValue.submit(
+    { share_sales_records: shareSalesRecords.value ? 0 : 1 },
+    { onSuccess: () => toast.success(__('Sales team access updated')) },
+  )
+}
 
 const nodes = createListResource({
   doctype: DOCTYPE,

@@ -341,7 +341,8 @@ def get_erpnext_site_client(erpnext_crm_settings):
 def get_local_customer(crm_deal: str):
 	customer = frappe.db.exists("Customer", {"crm_deal": crm_deal})
 	if not customer:
-		customer = frappe.db.get_value("CRM Deal", crm_deal, "erpnext_customer")
+		linked = frappe.db.get_value("CRM Deal", crm_deal, "erpnext_customer")
+		customer = frappe.db.exists("Customer", linked) if linked else None
 	return customer
 
 
@@ -651,6 +652,11 @@ def get_deal_from_sales_order(doc):
 
 
 def create_customer_from_deal(doc, erpnext_crm_settings):
+	if not erpnext_crm_settings.is_erpnext_in_different_site:
+		customer = get_local_customer(doc.name)
+		if customer:
+			frappe.db.set_value("CRM Deal", doc.name, "erpnext_customer", customer)
+			return customer
 	contacts = get_contacts(doc)
 	address = get_organization_address(doc.organization)
 

@@ -4,10 +4,20 @@
       v-for="action in normalActions"
       :key="action.label"
       :label="action.label"
+      :class="isDriveAction(action) ? driveButton.className : undefined"
       @click="action.onClick(close)"
     >
-      <template v-if="action.icon" #prefix>
-        <FeatherIcon :name="action.icon" class="h-4 w-4" />
+      <template v-if="action.icon || isDriveAction(action)" #prefix>
+        <img
+          v-if="isDriveAction(action)"
+          :src="driveButton.icon"
+          class="gama-drive-icon"
+          width="18"
+          height="18"
+          alt=""
+          aria-hidden="true"
+        />
+        <FeatherIcon v-else :name="action.icon" class="h-4 w-4" />
       </template>
     </Button>
   </template>
@@ -27,7 +37,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { Dropdown } from 'frappe-ui'
 import { isMobileView } from '@/composables/settings'
 
@@ -35,6 +45,20 @@ const props = defineProps({
   actions: { type: [Object, Array, undefined], default: () => [] },
   close: { type: Function, default: () => {} },
 })
+
+const driveButton = shallowRef(window.gama?.drive_button)
+const isDriveAction = (action) => driveButton.value?.matches(action)
+
+watch(
+  () => props.actions.some((action) => action.label === 'Drive'),
+  async (hasDriveAction) => {
+    if (!hasDriveAction || driveButton.value) return
+    const asset = '/assets/gama/js/drive_button.js?v=20261007'
+    await import(/* @vite-ignore */ asset)
+    driveButton.value = window.gama.drive_button
+  },
+  { immediate: true },
+)
 
 const normalActions = computed(() => {
   return props.actions.filter((action) => !action.group)

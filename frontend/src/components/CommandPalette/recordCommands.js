@@ -10,7 +10,7 @@ export function recordCommands(context) {
     commentCommand(context),
     ...templateCommand(context),
     ...createCommands(context),
-    attachCommand(context),
+    ...(context.openFileUploader ? [attachCommand(context)] : []),
     tabCommand(context),
     ...tabFlatCommands(context),
     ...copyCommands(context),

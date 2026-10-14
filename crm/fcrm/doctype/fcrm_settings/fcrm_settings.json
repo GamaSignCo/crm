@@ -10,6 +10,7 @@
   "restore_demo_data",
   "enable_forecasting",
   "enable_sales_hierarchy",
+  "share_sales_records",
   "auto_update_expected_deal_value",
   "update_timestamp_on_new_communication",
   "auto_mark_replied_on_response",
@@ -87,6 +88,13 @@
    "fieldname": "enable_sales_hierarchy",
    "fieldtype": "Check",
    "label": "Enable Sales Hierarchy Permissions"
+  },
+  {
+   "default": "0",
+   "description": "Sales Users can view and edit all Leads and Deals, including records owned by colleagues. This takes precedence over Sales Hierarchy for Sales Users only.",
+   "fieldname": "share_sales_records",
+   "fieldtype": "Check",
+   "label": "Share Leads and Deals With Sales Team"
   },
   {
    "fieldname": "currency",

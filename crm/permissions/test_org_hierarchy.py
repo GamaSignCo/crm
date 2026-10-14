@@ -1,10 +1,13 @@
 # Copyright (c) 2026, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
+from unittest.mock import patch
+
 import frappe
 from frappe.utils.nestedset import rebuild_tree
 
 from crm.api.activities import get_activities
+from crm.permissions import org_hierarchy
 from crm.permissions.org_hierarchy import (
 	get_lead_permission_query_conditions,
 	has_deal_permission,
@@ -24,6 +27,12 @@ class TestOrgHierarchy(FrappeTestCase):
 	  └── rep2@hier.test
 	  outsider@hier.test  (not in the hierarchy)
 	"""
+
+	def setUp(self):
+		super().setUp()
+		sharing = patch.object(org_hierarchy, "sales_team_shares_records", return_value=False)
+		sharing.start()
+		self.addCleanup(sharing.stop)
 
 	@classmethod
 	def setUpClass(cls):

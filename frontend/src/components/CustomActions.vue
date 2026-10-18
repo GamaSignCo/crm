@@ -17,7 +17,7 @@
           alt=""
           aria-hidden="true"
         />
-        <FeatherIcon v-else :name="action.icon" class="h-4 w-4" />
+        <Icon v-else :icon="action.icon" class="h-4 w-4" />
       </template>
     </Button>
   </template>
@@ -29,7 +29,7 @@
       <Dropdown v-slot="{ open }" :options="g.action">
         <Button
           :label="g.label"
-          :iconRight="open ? 'chevron-up' : 'chevron-down'"
+          :iconRight="open ? 'lucide-chevron-up' : 'lucide-chevron-down'"
         />
       </Dropdown>
     </div>
@@ -39,7 +39,9 @@
 <script setup>
 import { computed, shallowRef, watch } from 'vue'
 import { Dropdown } from 'frappe-ui'
+import Icon from '@/components/Icon.vue'
 import { isMobileView } from '@/composables/settings'
+import { spriteIcon } from '@/utils/spriteIcon'
 
 const props = defineProps({
   actions: { type: [Object, Array, undefined], default: () => [] },
@@ -72,9 +74,10 @@ const groupedWithLabelActions = computed(() => {
     .forEach((action) => {
       let groupIndex = _actions.findIndex((a) => a.label === action.buttonLabel)
 
-      action.items = action.items.map((item) => {
+      action.options = (action.options || action.items).map((item) => {
         return {
           ...item,
+          icon: spriteIcon(item.icon),
           onClick: () => item.onClick(props.close),
         }
       })
@@ -99,10 +102,10 @@ const groupedActions = computed(() => {
     _actions.push({
       group: __('Actions'),
       hideLabel: true,
-      items: _normalActions.map((action) => ({
+      options: _normalActions.map((action) => ({
         label: action.label,
         onClick: () => action.onClick(props.close),
-        icon: action.icon,
+        icon: spriteIcon(action.icon),
       })),
     })
   }
@@ -115,9 +118,10 @@ const groupedActions = computed(() => {
   props.actions
     .filter((action) => action.group && !action.buttonLabel)
     .forEach((action) => {
-      action.items = action.items.map((item) => {
+      action.options = (action.options || action.items).map((item) => {
         return {
           ...item,
+          icon: spriteIcon(item.icon),
           onClick: () => item.onClick(props.close),
         }
       })

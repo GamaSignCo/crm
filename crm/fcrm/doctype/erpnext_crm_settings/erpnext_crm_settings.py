@@ -695,7 +695,11 @@ def create_customer_from_deal(doc, erpnext_crm_settings):
 			if doc.industry and not frappe.db.exists("Industry Type", doc.industry):
 				customer_data["industry"] = ""
 
-			customer_name = create_customer(customer_data)
+			creators = frappe.get_hooks("crm_local_customer_creation")
+			if creators:
+				customer_name = frappe.get_attr(creators[-1])(doc, customer_data)
+			else:
+				customer_name = create_customer(customer_data)
 		else:
 			client = get_erpnext_site_client(erpnext_crm_settings)
 

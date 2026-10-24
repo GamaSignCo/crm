@@ -59,6 +59,7 @@ import { usersStore } from '@/stores/users'
 import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { useDocument } from '@/data/document'
+import { withOrganizationLink } from '@/utils/partyLinks'
 import { evaluateDependsOnValue } from '@/utils'
 import { useDoctypeModal } from '@/composables/doctypeModal'
 import { useTelemetry } from '@framework/ui/telemetry'
@@ -67,6 +68,7 @@ import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
+  organization: { type: String, default: '' },
   contact: { type: Object, default: () => {} },
   options: {
     type: Object,
@@ -164,7 +166,7 @@ async function createContact() {
   insertContact.submit({
     doc: {
       doctype: 'Contact',
-      ..._contact.doc,
+      ...withOrganizationLink(_contact.doc, props.organization),
     },
   })
 }

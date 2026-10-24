@@ -6,6 +6,17 @@
 
 ---
 
+## Explicit organization relationships — 2026-10-24
+
+- Organization contact creation now sends a Dynamic Link, not only company-name text.
+- The Add Contact action checks permissions and preserves existing relationships.
+- Organization contact lists show actual relationships and identify legacy text-only matches.
+- Address creation keeps the draft organization address empty until the Address exists.
+- Local ERPNext customer creation supports an optional app hook to reuse exact Contact and Address identities.
+- Remote ERPNext behavior remains unchanged. No bulk relationship repair runs during deployment.
+
+---
+
 ## Phase 1 — setFieldProperty & Meta Refactor
 
 > **Completed.** Implemented `setFieldProperty`, `setFieldProperties`, `removeFieldProperty`, `getField` for fields, sections, tabs, and child table rows.

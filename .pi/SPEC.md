@@ -46,6 +46,23 @@ class CRMLead {
 
 ## Lifecycle Hooks
 
+### Local ERPNext customer creation
+
+The optional `crm_local_customer_creation` app hook replaces customer creation only when ERPNext uses the same site.
+The handler receives `(deal_document, customer_data)` and returns the Customer name.
+The handler must check permissions, reuse explicit party identities, and keep the current transaction atomic.
+Without the hook, CRM uses the native ERPNext bridge. Remote-site customer creation does not use this hook.
+
+### Organization contacts
+
+`crm.api.organization.link_contact(organization, contact)` requires organization write access and contact read access.
+Adding missing relationships also requires contact write access. Existing relationships are not removed.
+`crm.api.organization.get_contacts(organization, limit=20)` preserves Contact record permissions.
+Its rows include `link_missing` for legacy company-name-only matches. This flag does not create a relationship.
+The organization contact modal uses explicit organization context. It does not infer links from `company_name` text.
+
+### Form Script lifecycle
+
 | Hook | Aliases | When it fires |
 |---|---|---|
 | `onLoad` | `on_load` | Once, when document first loads from server |

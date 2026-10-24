@@ -28,7 +28,6 @@
         v-if="activeTab === 'contacts'"
         value=""
         doctype="Contact"
-        :filters="{ company_name: ['!=', props.organizationId] }"
         :onCreate="
           (value, close) => {
             _contact = {
@@ -214,6 +213,7 @@
     v-if="showContactModal"
     v-model="showContactModal"
     :contact="_contact"
+    :organization="props.organizationId"
     :options="{ redirect: false, afterInsert: () => contacts.reload() }"
   />
   <DealModal
@@ -242,6 +242,7 @@ import Link from '@/components/Controls/Link.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import EnrichFromWebsite from '@/components/EnrichFromWebsite.vue'
 import { useDocument } from '@/data/document'
+import { useOrganizationContacts } from '@/composables/useOrganizationContacts'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { getMeta } from '@/stores/meta'
@@ -467,26 +468,7 @@ const deals = createListResource({
   auto: true,
 })
 
-const contacts = createListResource({
-  type: 'list',
-  doctype: 'Contact',
-  cache: ['contacts', props.organizationId],
-  fields: [
-    'name',
-    'full_name',
-    'image',
-    'email_id',
-    'mobile_no',
-    'company_name',
-    'modified',
-  ],
-  filters: {
-    company_name: props.organizationId,
-  },
-  orderBy: 'modified desc',
-  pageLength: 20,
-  auto: true,
-})
+const { contacts, addContact } = useOrganizationContacts(props.organizationId)
 
 const rows = computed(() => {
   let list = activeTab.value === 'deals' ? deals : contacts
@@ -537,6 +519,7 @@ function getContactRowObject(contact) {
       image: contact.image,
     },
     email: contact.email_id,
+    link_status: contact.link_missing ? __('Link missing') : __('Linked'),
     mobile_no: contact.mobile_no,
     company_name: {
       label: contact.company_name,
@@ -586,6 +569,11 @@ const dealColumns = [
 ]
 
 const contactColumns = [
+  {
+    label: __('Link Status'),
+    key: 'link_status',
+    width: '9rem',
+  },
   {
     label: __('Name'),
     key: 'full_name',

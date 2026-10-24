@@ -137,7 +137,6 @@ const tabs = createResource({
           column.fields.forEach((field) => {
             if (field.fieldname == 'address') {
               field.create = (value, close) => {
-                organization.doc.address = value
                 showAddressModal()
                 close()
               }

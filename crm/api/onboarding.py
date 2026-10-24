@@ -20,10 +20,22 @@ def should_auto_complete_setup():
 
 	if frappe.is_setup_complete() or frappe.conf.skip_setup_wizard:
 		return False
-	# apps with their own wizard stages (e.g. ERPNext) still need user input
-	if frappe.get_hooks("setup_wizard_stages"):
+	if apps_need_wizard_input():
 		return False
-	return has_non_admin_user() and is_fc_site()
+	return has_prefilled_settings() and has_non_admin_user() and is_fc_site()
+
+
+def apps_need_wizard_input():
+	for app in frappe.get_installed_apps():
+		hooks = frappe.get_hooks(app_name=app)
+		if hooks.get("setup_wizard_stages") or hooks.get("setup_wizard_complete"):
+			return True
+	return False
+
+
+def has_prefilled_settings():
+	settings = frappe.get_single("System Settings")
+	return bool(settings.country and settings.time_zone and settings.currency)
 
 
 def get_prefilled_setup_args():
@@ -35,6 +47,7 @@ def get_prefilled_setup_args():
 		"country": settings.country,
 		"timezone": settings.time_zone,
 		"currency": settings.currency,
+		"enable_telemetry": settings.enable_telemetry,
 	}
 
 

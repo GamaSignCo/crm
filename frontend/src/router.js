@@ -191,14 +191,15 @@ router.beforeEach(async (to, from, next) => {
     const { views, getDefaultView } = viewsStore()
     await views.promise
 
-    let defaultView = getDefaultView()
-    if (!defaultView) {
-      next({ name: 'Leads' })
-      return
-    }
-
+    const defaultView = getDefaultView() || {}
     let { route_name, type, name, is_standard } = defaultView
-    route_name = route_name || 'Leads'
+    const preferred = route_name || 'Leads'
+    route_name = await call('crm.api.session.get_default_route', { preferred })
+    if (route_name !== preferred) {
+      type = 'list'
+      name = null
+      is_standard = true
+    }
 
     if (name && !is_standard) {
       next({

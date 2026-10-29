@@ -1,7 +1,7 @@
 import { globalStore } from '@/stores/global'
 import { sessionStore } from '@/stores/session'
 import { usersStore } from '@/stores/users'
-import { createListResource, createResource, toast } from 'frappe-ui'
+import { createResource, toast } from 'frappe-ui'
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 
@@ -43,12 +43,10 @@ export const availabilityStore = defineStore('crm-availability', () => {
   const { users, getUser } = usersStore()
   const { $socket } = globalStore()
 
-  const statuses = createListResource({
-    doctype: 'CRM Availability Status',
-    fields: ['name', 'category', 'color', 'enabled', 'position'],
-    orderBy: 'position asc',
+  const statuses = createResource({
+    url: 'crm.api.session.get_statuses',
+    params: { doctype: 'CRM Availability Status' },
     cache: 'crm-availability-statuses',
-    pageLength: 100,
     initialData: [],
     auto: true,
   })

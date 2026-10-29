@@ -4,6 +4,43 @@ from frappe import _
 CRM_ALLOWED_ROLES = ["System Manager", "Sales Manager", "Sales User"]
 
 
+@frappe.whitelist()
+def get_statuses(doctype: str):
+	fields = {
+		"CRM Lead Status": ["name", "color", "position", "type"],
+		"CRM Deal Status": ["name", "color", "position", "type"],
+		"CRM Communication Status": ["name"],
+		"CRM Availability Status": ["name", "category", "color", "enabled", "position"],
+	}.get(doctype)
+	if fields is None:
+		frappe.throw(_("Invalid status DocType"), frappe.ValidationError)
+	if frappe.session.user == "Guest":
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	if not frappe.has_permission(doctype, "read"):
+		return []
+	return frappe.get_list(
+		doctype,
+		fields=fields,
+		order_by="position asc" if "position" in fields else "name asc",
+		limit_page_length=0,
+	)
+
+
+@frappe.whitelist()
+def get_default_route(preferred: str = "Leads"):
+	if frappe.session.user == "Guest":
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+	routes = {
+		"Leads": "CRM Lead", "Deals": "CRM Deal", "Contacts": "Contact",
+		"Organizations": "CRM Organization", "Notes": "FCRM Note", "Tasks": "CRM Task",
+		"Call Logs": "CRM Call Log", "Data Imports": "Data Import",
+	}
+	for route in [preferred, *routes]:
+		if route in routes and frappe.has_permission(routes[route], "read"):
+			return route
+	frappe.throw(_("Not permitted to read CRM resources."), frappe.PermissionError)
+
+
 def get_session_role_flags():
 	roles = set(frappe.get_roles())
 

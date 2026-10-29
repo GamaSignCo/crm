@@ -2,7 +2,7 @@ import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import { parseColor, isTranslatable } from '@/utils'
 import { defineStore } from 'pinia'
 import { useTelemetry } from '@framework/ui/telemetry'
-import { createListResource } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 import { reactive, h } from 'vue'
 
 export const statusesStore = defineStore('crm-statuses', () => {
@@ -12,10 +12,9 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
   const { capture } = useTelemetry()
 
-  const leadStatuses = createListResource({
-    doctype: 'CRM Lead Status',
-    fields: ['name', 'color', 'position', 'type'],
-    orderBy: 'position asc',
+  const leadStatuses = createResource({
+    url: 'crm.api.session.get_statuses',
+    params: { doctype: 'CRM Lead Status' },
     cache: 'lead-statuses',
     initialData: [],
     auto: true,
@@ -28,10 +27,9 @@ export const statusesStore = defineStore('crm-statuses', () => {
     },
   })
 
-  const dealStatuses = createListResource({
-    doctype: 'CRM Deal Status',
-    fields: ['name', 'color', 'position', 'type'],
-    orderBy: 'position asc',
+  const dealStatuses = createResource({
+    url: 'crm.api.session.get_statuses',
+    params: { doctype: 'CRM Deal Status' },
     cache: 'deal-statuses',
     initialData: [],
     auto: true,
@@ -44,9 +42,9 @@ export const statusesStore = defineStore('crm-statuses', () => {
     },
   })
 
-  const communicationStatuses = createListResource({
-    doctype: 'CRM Communication Status',
-    fields: ['name'],
+  const communicationStatuses = createResource({
+    url: 'crm.api.session.get_statuses',
+    params: { doctype: 'CRM Communication Status' },
     cache: 'communication-statuses',
     initialData: [],
     auto: true,

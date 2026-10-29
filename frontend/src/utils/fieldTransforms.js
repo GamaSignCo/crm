@@ -176,3 +176,8 @@ export function findMissingMandatory(fields, doc, options = {}) {
 
   return missingFields
 }
+export function isDocumentReadOnly(doc, permissions) {
+  return Boolean(
+    doc?.name && !doc.__newDocument && !permissions?.permissions?.write,
+  )
+}

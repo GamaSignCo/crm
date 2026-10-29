@@ -43,6 +43,7 @@
           'HTML',
           'Geolocation',
           'Text Editor',
+          'Table',
         ].includes(field.fieldtype)
       "
       v-model="data[field.fieldname]"
@@ -58,6 +59,7 @@
       :doctype="field.options"
       :parentDoctype="doctype"
       :parentFieldname="field.fieldname"
+      :readOnly="Boolean(field.read_only || field.disabled)"
     />
     <Select
       v-else-if="field.fieldtype === 'Select' && hasOptionIcons"
@@ -380,6 +382,7 @@ import { getMeta } from '@/stores/meta'
 import {
   parseLinkFilters,
   applyStateFieldOptions,
+  isDocumentReadOnly,
 } from '@/utils/fieldTransforms'
 import { isFetchedFromLink } from '@/utils/fetchFrom'
 import { usersStore } from '@/stores/users'
@@ -434,6 +437,7 @@ let triggerOnChange
 let triggerButton
 let parentDoc
 const formDocument = ref(null)
+const documentPermissions = ref(null)
 
 // Standalone mode: context injected from FieldLayout when context prop is set
 const standaloneContext = inject('fieldLayoutContext', null)
@@ -472,10 +476,12 @@ if (standaloneContext) {
     triggerOnRowAdd,
     triggerOnRowRemove,
     document: doc,
+    permissions,
   } = useDocument(doctype, resolvedName)
   triggerOnChange = trigger
   triggerButton = triggerBtn
   formDocument.value = doc
+  documentPermissions.value = permissions
 
   provide('triggerOnChange', triggerOnChange)
   provide('triggerButton', triggerButton)
@@ -586,10 +592,12 @@ const field = computed(() => {
   // Script overrides for read_only take priority over depends_on
   const scriptReadOnly = overrides?.read_only
   const effectiveReadOnly =
-    scriptReadOnly !== undefined
+    (documentPermissions.value &&
+      isDocumentReadOnly(data.value, documentPermissions.value.data)) ||
+    (scriptReadOnly !== undefined
       ? scriptReadOnly
       : field.read_only ||
-        (field.read_only_depends_on && read_only_via_depends_on)
+        (field.read_only_depends_on && read_only_via_depends_on))
 
   // Script overrides for depends_on visibility
   const scriptHidden = overrides?.hidden

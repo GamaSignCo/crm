@@ -16,6 +16,7 @@
           class="inline-flex items-center justify-center border-r border-outline-gray-2 h-8 p-2 w-12 shrink-0"
         >
           <Checkbox
+            v-if="!readOnly"
             class="cursor-pointer duration-300"
             :modelValue="allRowsSelected"
             @click.stop="toggleSelectAllRows($event.target.checked)"
@@ -54,6 +55,7 @@
         </div>
         <div class="flex items-center justify-center w-12 shrink-0">
           <Button
+            v-if="!readOnly"
             :tooltip="__('Edit Grid Fields')"
             class="rounded-4 !bg-surface-gray-2 border-0 !text-ink-gray-5"
             variant="outline"
@@ -70,6 +72,7 @@
           :delay="isTouchScreenDevice() ? 200 : 0"
           group="rows"
           item-key="name"
+          :disabled="readOnly"
           @end="reorder"
         >
           <template #item="{ element: row, index }">
@@ -77,7 +80,7 @@
               class="grid-row flex cursor-pointer items-center border-b border-outline-elevation-2 bg-surface-elevation-2 last:rounded-b-4 last:border-b-0"
               @click.stop="
                 () => {
-                  if (!gridSettings.editable_grid) {
+                  if (!readOnly && !gridSettings.editable_grid) {
                     showRowList[index] = true
                   }
                 }
@@ -87,6 +90,7 @@
                 class="grid-row-checkbox inline-flex h-9.5 items-center bg-surface-base justify-center border-r border-outline-elevation-2 p-2 w-12 shrink-0"
               >
                 <Checkbox
+                  v-if="!readOnly"
                   class="cursor-pointer duration-300"
                   :modelValue="selectedRows.has(row.name)"
                   @click.stop="toggleSelectRow(row)"
@@ -419,6 +423,7 @@
                 class="edit-row flex items-center justify-center w-12 shrink-0"
               >
                 <Button
+                  v-if="!readOnly"
                   :tooltip="__('Edit Row')"
                   class="rounded-4 border-0 !text-ink-gray-7"
                   variant="outline"
@@ -427,7 +432,7 @@
                 />
               </div>
               <GridRowModal
-                v-if="showRowList[index]"
+                v-if="!readOnly && showRowList[index]"
                 v-model="showRowList[index]"
                 v-model:showGridRowFieldsModal="showGridRowFieldsModal"
                 :index="index"
@@ -449,7 +454,7 @@
       </div>
     </div>
 
-    <div v-if="fields?.length" class="mt-2 flex flex-row gap-2">
+    <div v-if="!readOnly && fields?.length" class="mt-2 flex flex-row gap-2">
       <Button
         v-if="showDeleteBtn"
         :label="__('Delete')"
@@ -460,13 +465,13 @@
       <Button :label="__('Add Row')" @click="addRow" />
     </div>
     <GridRowFieldsModal
-      v-if="showGridRowFieldsModal"
+      v-if="!readOnly && showGridRowFieldsModal"
       v-model="showGridRowFieldsModal"
       :doctype="doctype"
       :parentDoctype="parentDoctype"
     />
     <GridFieldsEditorModal
-      v-if="showGridFieldsEditorModal"
+      v-if="!readOnly && showGridFieldsEditorModal"
       v-model="showGridFieldsEditorModal"
       :doctype="doctype"
       :parentDoctype="parentDoctype"
@@ -524,6 +529,7 @@ const props = defineProps({
   parentDoctype: { type: String, required: true },
   parentFieldname: { type: String, required: true },
   overrides: { type: Object, default: () => ({}) },
+  readOnly: { type: Boolean, default: false },
 })
 
 const restrictedFieldTypes = [
@@ -576,6 +582,8 @@ function getRowFieldObj(field, row) {
   let merged = { ...field }
   if (colOverrides) Object.assign(merged, colOverrides)
   if (rowOverrides) Object.assign(merged, rowOverrides)
+
+  if (props.readOnly) merged.read_only = true
 
   merged.disabled = Boolean(merged.read_only || isFetchedFromLink(merged, row))
   return merged
@@ -696,6 +704,7 @@ const toggleSelectRow = (row) => {
 }
 
 const addRow = () => {
+  if (props.readOnly) return
   const newRow = {}
   allFields.value?.forEach((field) => {
     if (field.fieldtype === 'Check') {
@@ -720,6 +729,7 @@ const addRow = () => {
 }
 
 const deleteRows = () => {
+  if (props.readOnly) return
   rows.value = rows.value.filter((row) => !selectedRows.has(row.name))
   triggerOnRowRemove(selectedRows, rows.value)
 
@@ -728,12 +738,14 @@ const deleteRows = () => {
 }
 
 const reorder = () => {
+  if (props.readOnly) return
   rows.value.forEach((row, index) => {
     row.idx = index + 1
   })
 }
 
 async function handleButtonClick(field, row) {
+  if (props.readOnly) return
   if (typeof field.click === 'function') {
     await field.click(row)
   } else {
@@ -742,6 +754,7 @@ async function handleButtonClick(field, row) {
 }
 
 function fieldChange(value, field, row) {
+  if (props.readOnly) return
   value = Array.isArray(value)
     ? value
     : typeof value === 'object' && value !== null && 'value' in value
